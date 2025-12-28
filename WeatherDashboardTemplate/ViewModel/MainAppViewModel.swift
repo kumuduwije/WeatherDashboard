@@ -66,7 +66,7 @@ final class MainAppViewModel: ObservableObject {
     func submitQuery() {
         let city = query.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !city.isEmpty else {
-            appError = .missingData(message: "Please enter a valid location.")
+//            appError = .missingData(message: "Please enter a valid location.")
             return
         }
         Task {
