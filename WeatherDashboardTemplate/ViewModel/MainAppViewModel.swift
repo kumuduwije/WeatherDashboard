@@ -250,11 +250,11 @@ final class MainAppViewModel: ObservableObject {
         // Update map region
         focus(on: place.coordinate)
         
-        // Ensure place is at top of visited list
-        if let index = visited.firstIndex(where: { $0.id == place.id }), index != 0 {
-            visited.remove(at: index)
-            visited.insert(place, at: 0)
-        }
+        // re-order when change the visited array
+//        if let index = visited.firstIndex(where: { $0.id == place.id }), index != 0 {
+//            visited.remove(at: index)
+//            visited.insert(place, at: 0)
+//        }
         
         print("✅ === All data loaded successfully ===\n")
     }

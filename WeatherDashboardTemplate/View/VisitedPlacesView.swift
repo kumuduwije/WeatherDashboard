@@ -17,39 +17,30 @@ struct VisitedPlacesView: View {
             // Background gradient
             LinearGradient(
                 gradient: Gradient(colors: [
-                    Color.purple.opacity(0.3),
-                    Color.blue.opacity(0.2),
-                    Color.indigo.opacity(0.3)
+                    Color(red: 0.5, green: 0.85, blue: 0.85), // Cyan/teal at top
+                    Color(red: 0.7, green: 0.75, blue: 0.95)  // Light purple at bottom
                 ]),
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
+                startPoint: .top,
+                endPoint: .bottom
             )
             .ignoresSafeArea()
             
             VStack(spacing: 0) {
-                // MARK: - Header
-                HStack {
-                    Image(systemName: "globe.americas.fill")
-                        .font(.system(size: 24))
-                        .foregroundColor(.white)
+                // MARK: - Header with lollipop icon
+                HStack(spacing: 8) {
+                    Text("Visited Places 📍")
+                        .font(.system(size: 34, weight: .bold))
+                        .foregroundColor(Color(red: 0.2, green: 0.4, blue: 0.45))
                     
-                    Text("Visited Places")
-                        .font(.system(size: 28, weight: .bold))
-                        .foregroundColor(.white)
-                    
-                    Spacer()
-                    
-                    // Count badge
-                    if !vm.visited.isEmpty {
-                        Text("\(vm.visited.count)")
-                            .font(.system(size: 16, weight: .bold))
-                            .foregroundColor(.white)
-                            .frame(width: 35, height: 35)
-                            .background(Circle().fill(Color.blue))
-                    }
+                    // Lollipop/pin icon
+//                    Image(systemName: "mappin")
+//                        .font(.system(size: 28, weight: .semibold))
+//                        .foregroundColor(Color(red: 0.4, green: 0.5, blue: 0.55))
                 }
-                .padding()
-                .background(Color.white.opacity(0.1))
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.horizontal, 20)
+                .padding(.top, 20)
+                .padding(.bottom, 15)
                 
                 // MARK: - Places List or Empty State
                 if vm.visited.isEmpty {
@@ -59,15 +50,15 @@ struct VisitedPlacesView: View {
                         
                         Image(systemName: "map.fill")
                             .font(.system(size: 80))
-                            .foregroundColor(.white.opacity(0.5))
+                            .foregroundColor(.gray.opacity(0.4))
                         
                         Text("No Saved Places")
                             .font(.system(size: 24, weight: .semibold))
-                            .foregroundColor(.white)
+                            .foregroundColor(.gray)
                         
                         Text("Search for a location to get started")
                             .font(.system(size: 16))
-                            .foregroundColor(.white.opacity(0.7))
+                            .foregroundColor(.gray.opacity(0.7))
                             .multilineTextAlignment(.center)
                         
                         Spacer()
@@ -76,47 +67,51 @@ struct VisitedPlacesView: View {
                     
                 } else {
                     // List of saved places
-                    ScrollView {
-                        LazyVStack(spacing: 12) {
-                            ForEach(vm.visited) { place in
-                                PlaceRow(place: place)
-                                    .onTapGesture {
-                                        handlePlaceTap(place: place)
-                                    }
-                                    .onLongPressGesture {
-                                        handlePlaceLongPress(place: place)
-                                    }
-                                    .swipeActions(edge: .trailing, allowsFullSwipe: true) {
-                                        Button(role: .destructive) {
-                                            handleDelete(place: place)
-                                        } label: {
-                                            Label("Delete", systemImage: "trash.fill")
-                                        }
-                                    }
+                    List {
+                        ForEach(vm.visited) { place in
+                            PlaceRowCard(
+                                place: place,
+                                isActive: isActivePlace(place)
+                            )
+                            .listRowBackground(Color.clear)
+                            .listRowSeparator(.hidden)
+                            .listRowInsets(EdgeInsets(
+                                top: 0,
+                                leading: 0,
+                                bottom: 0,
+                                trailing: 0
+                            ))
+                            .onTapGesture {
+                                handlePlaceTap(place: place)
+                            }
+                            .onLongPressGesture {
+                                handlePlaceLongPress(place: place)
                             }
                         }
-                        .padding()
+                        .onDelete(perform: deleteItems)
                     }
+                    .listStyle(.plain)
+                    .scrollContentBackground(.hidden)
                 }
                 
-                // MARK: - Instructions Footer
-                if !vm.visited.isEmpty {
-                    VStack(spacing: 8) {
-                        HStack(spacing: 15) {
-                            Label("Tap to load", systemImage: "hand.tap.fill")
-                            Label("Long press to search", systemImage: "hand.point.up.left.fill")
-                        }
-                        .font(.caption)
-                        .foregroundColor(.white.opacity(0.7))
-                        
-                        Label("Swipe left to delete", systemImage: "trash.fill")
-                            .font(.caption)
-                            .foregroundColor(.white.opacity(0.7))
-                    }
-                    .padding(.vertical, 10)
-                    .frame(maxWidth: .infinity)
-                    .background(Color.white.opacity(0.1))
-                }
+                Spacer()
+            }
+        }
+    }
+    
+    // MARK: - Helper to Check Active Place
+    private func isActivePlace(_ place: Place) -> Bool {
+        // Check if this place matches the currently active location
+        return place.name.lowercased() == vm.activePlaceName.lowercased()
+    }
+    
+    // MARK: - Delete Handler
+    private func deleteItems(at offsets: IndexSet) {
+        withAnimation {
+            for index in offsets {
+                let place = vm.visited[index]
+                print("🗑️ Deleting place: \(place.name)")
+                vm.delete(place: place)
             }
         }
     }
@@ -129,7 +124,7 @@ struct VisitedPlacesView: View {
         
         Task {
             await vm.loadLocation(fromPlace: place)
-            // Show info message directly
+            // Show info message
             vm.infoMessage = "Loaded \(place.name)"
             vm.showInfoAlert = true
             
@@ -153,88 +148,48 @@ struct VisitedPlacesView: View {
         UIApplication.shared.open(url)
         #endif
     }
-    
-    /// Handles swipe-to-delete
-    private func handleDelete(place: Place) {
-        print("🗑️ Deleting place: \(place.name)")
-        
-        withAnimation {
-            vm.delete(place: place)
-        }
-    }
 }
 
-// MARK: - Place Row Component
-struct PlaceRow: View {
+// MARK: - Place Row Card Component
+struct PlaceRowCard: View {
     let place: Place
+    let isActive: Bool
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            // Place name
-            HStack {
-                Image(systemName: "location.fill")
-                    .font(.system(size: 20))
-                    .foregroundColor(.blue)
-                
-                Text(place.name)
-                    .font(.system(size: 20, weight: .semibold))
-                    .foregroundColor(.white)
-                
-                Spacer()
-                
-                Image(systemName: "chevron.right")
-                    .font(.system(size: 14, weight: .semibold))
-                    .foregroundColor(.white.opacity(0.5))
-            }
+        VStack(alignment: .leading, spacing: 6) {
+            // Place name - dark color
+            Text(place.name)
+                .font(.system(size: 22, weight: .semibold))
+                .foregroundColor(Color(red: 0.15, green: 0.25, blue: 0.35))
             
-            // Coordinates
-            HStack(spacing: 8) {
-                Image(systemName: "globe")
-                    .font(.system(size: 12))
-                
-                Text(String(format: "%.2f, %.2f", place.latitude, place.longitude))
-                    .font(.system(size: 14, weight: .medium))
-            }
-            .foregroundColor(.white.opacity(0.7))
+            // Coordinates - gray color
+            Text("Lat: \(String(format: "%.3f", place.latitude)), Lon: \(String(format: "%.3f", place.longitude))")
+                .font(.system(size: 13, weight: .regular))
+                .foregroundColor(Color(red: 0.45, green: 0.55, blue: 0.6))
             
-            // Last used timestamp
-            HStack(spacing: 8) {
-                Image(systemName: "clock")
-                    .font(.system(size: 12))
-                
-                Text("Last used: \(formatDate(place.lastUsedAt))")
-                    .font(.system(size: 12))
-            }
-            .foregroundColor(.white.opacity(0.6))
-            
-            // POI count
-            HStack(spacing: 8) {
-                Image(systemName: "mappin.and.ellipse")
-                    .font(.system(size: 12))
-                
-                Text("\(place.annotations.count) attractions saved")
-                    .font(.system(size: 12))
-            }
-            .foregroundColor(.white.opacity(0.6))
+            // Timestamp - lighter gray
+            Text(formatTimestamp(place.lastUsedAt))
+                .font(.system(size: 12, weight: .regular))
+                .foregroundColor(Color(red: 0.5, green: 0.6, blue: 0.65))
         }
-        .padding(15)
         .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.vertical, 14)
+        .padding(.horizontal, 20)
+        // Apply background before outer padding this gets the proper spacing between card content
         .background(
-            RoundedRectangle(cornerRadius: 12)
-                .fill(Color.white.opacity(0.15))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 12)
-                        .stroke(Color.white.opacity(0.3), lineWidth: 1)
-                )
+            isActive
+                ? Color(red: 0.70, green: 0.73, blue: 0.88)  // Exact color from Image 2
+                : Color.clear
         )
+        .padding(.horizontal, 16)
         .contentShape(Rectangle())
     }
     
-    /// Formats date for display
-    private func formatDate(_ date: Date) -> String {
-        let formatter = RelativeDateTimeFormatter()
-        formatter.unitsStyle = .abbreviated
-        return formatter.localizedString(for: date, relativeTo: Date())
+    /// Formats timestamp
+    private func formatTimestamp(_ date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "dd MMM yyyy 'at' HH:mm:ss z"
+        return formatter.string(from: date)
     }
 }
 
