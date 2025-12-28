@@ -2,7 +2,7 @@
 //  NavBarView.swift
 //  WeatherDashboardTemplate
 //
-//  Created by girish lukka on 19/10/2025.
+//  Updated with separate info alert
 //
 
 import SwiftUI
@@ -18,7 +18,7 @@ struct NavBarView: View {
                 TextField("Enter location", text: $vm.query)
                     .textFieldStyle(.roundedBorder)
                     .submitLabel(.search)
-                    .onSubmit { vm.submitQuery() } 
+                    .onSubmit { vm.submitQuery() }
 
                 Button {
                     vm.submitQuery()
@@ -52,7 +52,7 @@ struct NavBarView: View {
             }
             .accentColor(.blue)
         }
-        .frame(maxWidth: .infinity,maxHeight: .infinity, alignment: .top)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
 
         .overlay {
             if vm.isLoading {
@@ -61,6 +61,8 @@ struct NavBarView: View {
                     .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 10))
             }
         }
+        
+        // Error Alert (red/warning)
         .alert(item: $vm.appError) { error in
             Alert(
                 title: Text("Error"),
@@ -68,23 +70,20 @@ struct NavBarView: View {
                 dismissButton: .default(Text("OK"))
             )
         }
+        
+        
+        .alert("Success", isPresented: $vm.showInfoAlert) {
+            Button("OK", role: .cancel) { }
+        } message: {
+            if let message = vm.infoMessage {
+                Text(message)
+            }
+        }
     }
 }
-
-
 
 #Preview {
     let vm = MainAppViewModel(context: ModelContext(ModelContainer.preview))
     NavBarView()
         .environmentObject(vm)
 }
-
-//#Preview("Full Dashboard") {
-//    // 👇 This creates a mock ModelContext using your in-memory preview container
-//    let vm = MainAppViewModel(context: ModelContext(ModelContainer.preview))
-//
-//    // 👇 This displays *all* your tab content at once
-//    NavBarView()
-//        .environmentObject(vm)
-//}
-//

@@ -5,118 +5,245 @@
 //  Created by girish lukka on 18/10/2025.
 //
 
+
+
 import SwiftUI
-import Charts
 import SwiftData
+import Charts
 
-
-import SwiftUI
-import Charts   // Include if you plan to show a chart later
-
-// MARK: - Temperature Category
-/// Example of how to categorize temperatures for display.
-/// Add more cases or adjust logic as needed.
+// MARK: - Temperature Category Enum
 enum TempCategory: String, CaseIterable {
-    case cold = "Cold"   // Example category
-
-    /// Choose a color to represent this category.
+    case freezing = "Freezing"
+    case cold = "Cold"
+    case cool = "Cool"
+    case mild = "Mild"
+    case warm = "Warm"
+    case hot = "Hot"
+    
+    /// Color for each temperature category
     var color: Color {
         switch self {
-        case .cold:
-            return .blue
-            // TODO: add more cases (e.g., .cool, .warm, .hot) with colors as needed
+        case .freezing: return .blue
+        case .cold: return .cyan
+        case .cool: return .teal
+        case .mild: return .green
+        case .warm: return .orange
+        case .hot: return .red
         }
     }
-
-    /// Convert a Celsius temperature into a category.
+    
+    /// Convert temperature to category
     static func from(tempC: Double) -> TempCategory {
-        if tempC <= 0 {
-            return .cold
+        switch tempC {
+        case ..<0: return .freezing
+        case 0..<10: return .cold
+        case 10..<15: return .cool
+        case 15..<20: return .mild
+        case 20..<28: return .warm
+        default: return .hot
         }
-        // TODO: add more logic for other ranges (cool, warm, hot)
-        return .cold
     }
 }
 
-// MARK: - Temperature Data Model
-/// A single temperature reading for the chart or list.
+// MARK: - Temperature Data Model for Chart
 private struct TempData: Identifiable {
     let id = UUID()
-    let time: Date          // e.g., forecast date
-    let type: String        // e.g., "High" or "Low"
-    let value: Double       // numeric value
+    let date: Date
+    let type: String        // "High" or "Low"
+    let value: Double       // Temperature value
     let category: TempCategory
 }
 
 // MARK: - Forecast View
-/// Stubbed Forecast View that includes an image placeholder to show
-/// what the final view will look like. Replace the image once real data and charts are added.
 struct ForecastView: View {
     @EnvironmentObject var vm: MainAppViewModel
-
-    /// Converts forecast data into chart-friendly entries.
+    
+    /// Convert daily forecast to chart data
     private var chartData: [TempData] {
-        vm.forecast.flatMap { day in
-            [
-                // These are hard-wired data, real data will come from weather data fetched by your api
-
-                    TempData(
-                        time: Date(),
-                        type: "High",
-                        value: 24.5,
-                        category: .from(tempC: 24.5)
-                    ),
-                    TempData(
-                        time: Calendar.current.date(byAdding: .day, value: 1, to: Date())!,
-                        type: "High",
-                        value: 19.0,
-                        category: .from(tempC: 19.0)
-                    ),
-                    TempData(
-                        time: Calendar.current.date(byAdding: .day, value: 2, to: Date())!,
-                        type: "High",
-                        value: 5.5,
-                        category: .from(tempC: 5.5)
-                    )
-                // TODO: add a "Low" entry or other data points if needed
+        vm.dailyForecast.flatMap { day -> [TempData] in
+            let date = Date(timeIntervalSince1970: TimeInterval(day.dt))
+            
+            return [
+                TempData(
+                    date: date,
+                    type: "High",
+                    value: day.temp.max,
+                    category: .from(tempC: day.temp.max)
+                ),
+                TempData(
+                    date: date,
+                    type: "Low",
+                    value: day.temp.min,
+                    category: .from(tempC: day.temp.min)
+                )
             ]
         }
     }
-
+    
     var body: some View {
-        VStack {
-            // MARK: - Header Text
-            Text("Image shows the information to be presented in this view")
-                .font(.headline)
-                .multilineTextAlignment(.center)
-                .padding(.top)
-
-            Spacer()
-
-            // MARK: - Placeholder Image
-            // Replace "forecast" with the name of your image asset.
-            // You can add your actual design or a wireframe image in Assets.xcassets.
-            Image("forecast")
-                .resizable()
-                .scaledToFit()
-                .frame(maxWidth: .infinity)
-                .cornerRadius(12)
-                .shadow(radius: 5)
-                .padding()
-
-            Spacer()
-        }
-        .frame(height: 600)
-        .background(
+        ZStack {
+            // Background gradient
             LinearGradient(
-                gradient: Gradient(colors: [.indigo.opacity(0.1), .blue.opacity(0.05)]),
+                gradient: Gradient(colors: [
+                    Color.indigo.opacity(0.4),
+                    Color.blue.opacity(0.2),
+                    Color.cyan.opacity(0.3)
+                ]),
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
             )
+            .ignoresSafeArea()
+            
+            ScrollView {
+                VStack(spacing: 20) {
+                    // MARK: - Header
+                    VStack(spacing: 5) {
+                        Text("8 Day Forecast - \(vm.activePlaceName)")
+                            .font(.system(size: 24, weight: .semibold))
+                            .foregroundColor(.white)
+                        
+                        Text("Daily Highs and Lows (°C)")
+                            .font(.system(size: 14, weight: .regular))
+                            .foregroundColor(.white.opacity(0.8))
+                    }
+                    .padding(.top, 20)
+                    
+                    // MARK: - Bar Chart
+                    if !chartData.isEmpty {
+                        VStack(alignment: .leading, spacing: 10) {
+                            Text("Temperature Chart")
+                                .font(.system(size: 18, weight: .semibold))
+                                .foregroundColor(.white)
+                                .padding(.horizontal, 20)
+                            
+                            Chart(chartData) { data in
+                                BarMark(
+                                    x: .value("Date", data.date, unit: .day),
+                                    y: .value("Temperature", data.value)
+                                )
+                                .foregroundStyle(data.category.color.gradient)
+                                .position(by: .value("Type", data.type))
+                            }
+                            .frame(height: 250)
+                            .padding(.horizontal, 20)
+                            .chartYAxis {
+                                AxisMarks(position: .leading) { value in
+                                    AxisValueLabel {
+                                        if let temp = value.as(Double.self) {
+                                            Text("\(Int(temp))°")
+                                                .foregroundColor(.white.opacity(0.8))
+                                        }
+                                    }
+                                    AxisGridLine(stroke: StrokeStyle(lineWidth: 0.5))
+                                        .foregroundStyle(.white.opacity(0.2))
+                                }
+                            }
+                            .chartXAxis {
+                                AxisMarks(values: .stride(by: .day)) { value in
+                                    AxisValueLabel(format: .dateTime.weekday(.narrow))
+                                        .foregroundStyle(Color.white.opacity(0.8))
+                                }
+                            }
+                            .chartLegend(position: .bottom) {
+                                HStack(spacing: 20) {
+                                    Label("High", systemImage: "arrow.up.circle.fill")
+                                    Label("Low", systemImage: "arrow.down.circle.fill")
+                                }
+                                .foregroundColor(.white.opacity(0.9))
+                                .font(.caption)
+                            }
+                        }
+                        .padding(.vertical, 15)
+                        .background(
+                            RoundedRectangle(cornerRadius: 15)
+                                .fill(Color.white.opacity(0.1))
+                        )
+                        .padding(.horizontal, 15)
+                    }
+                    
+                    // MARK: - Detailed Daily Summary
+                    VStack(alignment: .leading, spacing: 10) {
+                        Text("Detailed Daily Summary")
+                            .font(.system(size: 18, weight: .semibold))
+                            .foregroundColor(.white)
+                            .padding(.horizontal, 20)
+                        
+                        ForEach(vm.dailyForecast) { day in
+                            DailyForecastRow(daily: day)
+                        }
+                    }
+                    .padding(.top, 10)
+                    
+                    Spacer().frame(height: 30)
+                }
+            }
+        }
+    }
+}
+
+// MARK: - Daily Forecast Row Component
+struct DailyForecastRow: View {
+    let daily: Daily
+    
+    var body: some View {
+        VStack(spacing: 12) {
+            // Date
+            HStack {
+                Text(DateFormatterUtils.formattedDateWithWeekdayAndDay(from: TimeInterval(daily.dt)))
+                    .font(.system(size: 18, weight: .semibold))
+                    .foregroundColor(.white)
+                
+                Spacer()
+                
+                if let weather = daily.weather.first {
+                    Image(systemName: weather.sfSymbolName)
+                        .font(.system(size: 24))
+                        .foregroundColor(.white)
+                        .symbolRenderingMode(.multicolor)
+                }
+            }
+            
+            // Temperature range
+            HStack(spacing: 15) {
+                Label {
+                    Text("High: \(Int(daily.temp.max.rounded()))°C")
+                        .font(.system(size: 15, weight: .medium))
+                } icon: {
+                    Image(systemName: "arrow.up.circle.fill")
+                        .foregroundColor(.orange)
+                }
+                
+                Label {
+                    Text("Low: \(Int(daily.temp.min.rounded()))°C")
+                        .font(.system(size: 15, weight: .medium))
+                } icon: {
+                    Image(systemName: "arrow.down.circle.fill")
+                        .foregroundColor(.cyan)
+                }
+            }
+            .foregroundColor(.white.opacity(0.9))
+            
+            // Weather description and summary
+            if let weather = daily.weather.first {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(weather.description.capitalized)
+                        .font(.system(size: 14, weight: .medium))
+                        .foregroundColor(.white.opacity(0.95))
+                    
+                    Text(daily.summary)
+                        .font(.system(size: 12, weight: .regular))
+                        .foregroundColor(.white.opacity(0.7))
+                        .lineLimit(2)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+            }
+        }
+        .padding(15)
+        .background(
+            RoundedRectangle(cornerRadius: 12)
+                .fill(Color.white.opacity(0.15))
         )
-        .clipShape(RoundedRectangle(cornerRadius: 20))
-        .padding()
-        .navigationTitle("Forecast")
+        .padding(.horizontal, 20)
     }
 }
 
