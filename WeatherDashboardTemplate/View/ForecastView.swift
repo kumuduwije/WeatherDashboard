@@ -5,8 +5,6 @@
 //  Created by girish lukka on 18/10/2025.
 //
 
-
-
 import SwiftUI
 import SwiftData
 import Charts
@@ -85,94 +83,111 @@ struct ForecastView: View {
             // Background gradient
             LinearGradient(
                 gradient: Gradient(colors: [
-                    Color.indigo.opacity(0.4),
-                    Color.blue.opacity(0.2),
-                    Color.cyan.opacity(0.3)
+                    Color(red: 0.88, green: 0.85, blue: 0.95),  // Light purple top
+                    Color(red: 0.95, green: 0.90, blue: 0.92)   // Light pink bottom
                 ]),
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
+                startPoint: .top,
+                endPoint: .bottom
             )
             .ignoresSafeArea()
             
             ScrollView {
-                VStack(spacing: 20) {
-                    // MARK: - Header
-                    VStack(spacing: 5) {
+                VStack(spacing: 0) {
+                    VStack(alignment: .leading, spacing: 5) {
                         Text("8 Day Forecast - \(vm.activePlaceName)")
-                            .font(.system(size: 24, weight: .semibold))
-                            .foregroundColor(.white)
+                            .font(.system(size: 28, weight: .regular))
+                            .foregroundColor(Color(red: 0.15, green: 0.15, blue: 0.25))
                         
                         Text("Daily Highs and Lows (°C)")
-                            .font(.system(size: 14, weight: .regular))
-                            .foregroundColor(.white.opacity(0.8))
+                            .font(.system(size: 16, weight: .regular))
+                            .foregroundColor(Color(red: 0.4, green: 0.4, blue: 0.5))
                     }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.horizontal, 20)
                     .padding(.top, 20)
+                    .padding(.bottom, 20)
                     
-                    // MARK: - Bar Chart
+                    // MARK: - Chart & Title
                     if !chartData.isEmpty {
-                        VStack(alignment: .leading, spacing: 10) {
-                            Text("Temperature Chart")
-                                .font(.system(size: 18, weight: .semibold))
-                                .foregroundColor(.white)
-                                .padding(.horizontal, 20)
-                            
+                        VStack(alignment: .leading, spacing: 0) {
+                            // Chart
                             Chart(chartData) { data in
                                 BarMark(
                                     x: .value("Date", data.date, unit: .day),
                                     y: .value("Temperature", data.value)
                                 )
-                                .foregroundStyle(data.category.color.gradient)
+                                
+                                .foregroundStyle(data.type == "Low" ? Color.blue.gradient : Color.orange.gradient)
                                 .position(by: .value("Type", data.type))
                             }
                             .frame(height: 250)
                             .padding(.horizontal, 20)
+                            .padding(.top, 20)
                             .chartYAxis {
                                 AxisMarks(position: .leading) { value in
                                     AxisValueLabel {
                                         if let temp = value.as(Double.self) {
                                             Text("\(Int(temp))°")
-                                                .foregroundColor(.white.opacity(0.8))
+                                                .foregroundColor(Color(red: 0.4, green: 0.4, blue: 0.5))
                                         }
                                     }
                                     AxisGridLine(stroke: StrokeStyle(lineWidth: 0.5))
-                                        .foregroundStyle(.white.opacity(0.2))
+                                        .foregroundStyle(Color.gray.opacity(0.3))
                                 }
                             }
                             .chartXAxis {
                                 AxisMarks(values: .stride(by: .day)) { value in
-                                    AxisValueLabel(format: .dateTime.weekday(.narrow))
-                                        .foregroundStyle(Color.white.opacity(0.8))
+                                    AxisValueLabel(format: .dateTime.weekday(.abbreviated))
+                                        .foregroundStyle(Color(red: 0.4, green: 0.4, blue: 0.5))
                                 }
                             }
-                            .chartLegend(position: .bottom) {
-                                HStack(spacing: 20) {
-                                    Label("High", systemImage: "arrow.up.circle.fill")
-                                    Label("Low", systemImage: "arrow.down.circle.fill")
-                                }
-                                .foregroundColor(.white.opacity(0.9))
-                                .font(.caption)
-                            }
+                            
+                            Spacer().frame(height: 20)
+                            
+                            // Divider
+                            Divider()
+                                .background(Color(red: 0.5, green: 0.5, blue: 0.6).opacity(0.3))
+                                .padding(.horizontal, 20)
+                            
+                            Spacer().frame(height: 10)
+                            
+                            Text("Detailed Daily Summary")
+                                .font(.system(size: 18, weight: .bold))
+                                .foregroundColor(Color(red: 0.15, green: 0.15, blue: 0.25))
+                                .padding(.horizontal)
+                                .padding(.bottom,6)
+                                
+
                         }
-                        .padding(.vertical, 15)
                         .background(
-                            RoundedRectangle(cornerRadius: 15)
-                                .fill(Color.white.opacity(0.1))
+                            Rectangle()
+                                .fill(Color.white.opacity(0.3))
                         )
-                        .padding(.horizontal, 15)
+                        .shadow(color: Color.black.opacity(0.08), radius: 12, x: 0, y: 6)
+//                        .padding(.horizontal, 15)
                     }
                     
-                    // MARK: - Detailed Daily Summary
-                    VStack(alignment: .leading, spacing: 10) {
-                        Text("Detailed Daily Summary")
-                            .font(.system(size: 18, weight: .semibold))
-                            .foregroundColor(.white)
-                            .padding(.horizontal, 20)
-                        
-                        ForEach(vm.dailyForecast) { day in
+                    Spacer().frame(height: 15)
+                    
+                    // MARK: - Daily Summary List
+                    VStack(spacing: 0) {
+                        ForEach(Array(vm.dailyForecast.enumerated()), id: \.element.id) { index, day in
                             DailyForecastRow(daily: day)
+                            
+                            // Divider between rows (not after last one)
+                            if index < vm.dailyForecast.count - 1 {
+                                Divider()
+                                    .background(Color(red: 0.5, green: 0.5, blue: 0.6).opacity(0.2))
+                                    .padding(.horizontal, 20)
+                            }
                         }
                     }
-                    .padding(.top, 10)
+                    .background(
+                        RoundedRectangle(cornerRadius: 15)
+                            .fill(Color.white.opacity(0.3))
+                    )
+                    .shadow(color: Color.black.opacity(0.08), radius: 12, x: 0, y: 6)
+                    .padding(.horizontal, 15)
                     
                     Spacer().frame(height: 30)
                 }
@@ -186,64 +201,53 @@ struct DailyForecastRow: View {
     let daily: Daily
     
     var body: some View {
-        VStack(spacing: 12) {
-            // Date
-            HStack {
+        HStack {
+            VStack(alignment: .leading, spacing: 8) {
+                // Date
                 Text(DateFormatterUtils.formattedDateWithWeekdayAndDay(from: TimeInterval(daily.dt)))
-                    .font(.system(size: 18, weight: .semibold))
-                    .foregroundColor(.white)
+                    .font(.system(size: 18, weight: .bold))
+                    .foregroundColor(Color(red: 0.15, green: 0.15, blue: 0.25))
                 
-                Spacer()
+                // Summary description
+                Text(daily.summary)
+                    .font(.system(size: 16, weight: .regular))
+                    .foregroundColor(Color(red: 0.5, green: 0.5, blue: 0.6))
+                    .lineLimit(2)
                 
-                if let weather = daily.weather.first {
-                    Image(systemName: weather.sfSymbolName)
-                        .font(.system(size: 24))
-                        .foregroundColor(.white)
-                        .symbolRenderingMode(.multicolor)
-                }
-            }
-            
-            // Temperature range
-            HStack(spacing: 15) {
-                Label {
-                    Text("High: \(Int(daily.temp.max.rounded()))°C")
-                        .font(.system(size: 15, weight: .medium))
-                } icon: {
-                    Image(systemName: "arrow.up.circle.fill")
-                        .foregroundColor(.orange)
-                }
-                
-                Label {
-                    Text("Low: \(Int(daily.temp.min.rounded()))°C")
-                        .font(.system(size: 15, weight: .medium))
-                } icon: {
-                    Image(systemName: "arrow.down.circle.fill")
-                        .foregroundColor(.cyan)
-                }
-            }
-            .foregroundColor(.white.opacity(0.9))
-            
-            // Weather description and summary
-            if let weather = daily.weather.first {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(weather.description.capitalized)
-                        .font(.system(size: 14, weight: .medium))
-                        .foregroundColor(.white.opacity(0.95))
+                // Temperature range
+                HStack(spacing: 20) {
+                    HStack(spacing: 6) {
+                        Text("Low:")
+                            .font(.system(size: 15, weight: .medium))
+                            .foregroundColor(Color(red: 0.15, green: 0.15, blue: 0.25))
+                        Text("\(Int(daily.temp.min.rounded()))°C")
+                            .font(.system(size: 15, weight: .semibold))
+                            .foregroundColor(Color(red: 0.15, green: 0.15, blue: 0.25))
+                    }
                     
-                    Text(daily.summary)
-                        .font(.system(size: 12, weight: .regular))
-                        .foregroundColor(.white.opacity(0.7))
-                        .lineLimit(2)
+                    HStack(spacing: 6) {
+                        Text("High:")
+                            .font(.system(size: 15, weight: .medium))
+                            .foregroundColor(Color(red: 0.15, green: 0.15, blue: 0.25))
+                        Text("\(Int(daily.temp.max.rounded()))°C")
+                            .font(.system(size: 15, weight: .semibold))
+                            .foregroundColor(Color(red: 0.15, green: 0.15, blue: 0.25))
+                    }
                 }
-                .frame(maxWidth: .infinity, alignment: .leading)
+            }
+            
+            Spacer()
+            
+            // Weather icon on the right
+            if let weather = daily.weather.first {
+                Image(systemName: weather.sfSymbolName)
+                    .font(.system(size: 28))
+                    .foregroundColor(Color(red: 0.2, green: 0.25, blue: 0.35))
+                    .symbolRenderingMode(.hierarchical)
             }
         }
-        .padding(15)
-        .background(
-            RoundedRectangle(cornerRadius: 12)
-                .fill(Color.white.opacity(0.15))
-        )
         .padding(.horizontal, 20)
+        .padding(.vertical, 15)
     }
 }
 
