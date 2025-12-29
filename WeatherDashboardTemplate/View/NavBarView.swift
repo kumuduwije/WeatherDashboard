@@ -1,8 +1,7 @@
-//
 //  NavBarView.swift
 //  WeatherDashboardTemplate
 //
-//  Updated with separate info alert
+//  Created by girish lukka on 19/10/2025.
 //
 
 import SwiftUI

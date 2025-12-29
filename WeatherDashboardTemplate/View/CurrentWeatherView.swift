@@ -5,7 +5,6 @@
 //  Created by girish lukka on 18/10/2025.
 //
 
-
 import SwiftUI
 import SwiftData
 
@@ -14,170 +13,216 @@ struct CurrentWeatherView: View {
     
     var body: some View {
         ZStack {
-            // Background gradient
+            // Gradient background - light blue to pink/purple
             LinearGradient(
                 gradient: Gradient(colors: [
-                    Color.blue.opacity(0.6),
-                    Color.cyan.opacity(0.3),
-                    Color.blue.opacity(0.4)
+                    Color(red: 0.75, green: 0.82, blue: 0.95),  // Light blue top
+                    Color(red: 0.92, green: 0.85, blue: 0.92),  // Light pink middle
+                    Color(red: 0.95, green: 0.90, blue: 0.92)   // Very light pink bottom
                 ]),
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
+                startPoint: .top,
+                endPoint: .bottom
             )
             .ignoresSafeArea()
             
             ScrollView {
-                VStack(spacing: 20) {
-                    // MARK: - Location Name
-                    Text(vm.activePlaceName.isEmpty ? "Loading..." : vm.activePlaceName)
-                        .font(.system(size: 32, weight: .medium))
-                        .foregroundColor(.white)
-                        .padding(.top, 10)
-                    
-                    // MARK: - Current Date
-                    Text(DateFormatterUtils.formattedCurrentDate(format: "EEEE, dd MMM yyyy"))
-                        .font(.system(size: 16, weight: .regular))
-                        .foregroundColor(.white.opacity(0.9))
-                    
-                    Spacer().frame(height: 20)
-                    
+                VStack(spacing: 0) {
                     if let current = vm.currentWeather,
-                       let weather = current.weather.first {
+                       let weather = current.weather.first,
+                       let today = vm.dailyForecast.first {
                         
-                        // MARK: - Main Temperature Display
-                        VStack(spacing: 8) {
-                            // Weather icon
-                            Image(systemName: weather.sfSymbolName)
-                                .font(.system(size: 80))
-                                .foregroundColor(.white)
-                                .symbolRenderingMode(.multicolor)
+                        // MARK: - Location and Date Header (OUTSIDE SHADOW CARD)
+                        HStack() {
+                            // Location name
+                            Text(vm.activePlaceName.isEmpty ? "Loading..." : vm.activePlaceName)
+                                .font(.system(size: 30, weight: .bold))
+                                .foregroundColor(Color(red: 0.15, green: 0.15, blue: 0.25))
                             
-                            // Temperature
-                            Text("\(Int(current.temp.rounded()))°C")
-                                .font(.system(size: 70, weight: .thin))
-                                .foregroundColor(.white)
+                            Spacer()
                             
-                            // Weather description
-                            Text(weather.description.capitalized)
-                                .font(.system(size: 24, weight: .medium))
-                                .foregroundColor(.white.opacity(0.9))
+                            // Date
+                            Text(DateFormatterUtils.formattedCurrentDate(format: "EEEE, MMM dd"))
+                                .font(.system(size: 16, weight: .bold))
+                                .foregroundColor(Color(red: 0.4, green: 0.4, blue: 0.5))
                         }
-                        .padding(.vertical, 20)
+                        .padding(.horizontal, 20)
+                        .padding(.vertical, 3)
                         
-                        // MARK: - High/Low Temperature
-                        if let today = vm.dailyForecast.first {
-                            HStack(spacing: 30) {
-                                Label {
-                                    Text("\(Int(today.temp.max.rounded()))°C")
-                                        .font(.system(size: 18, weight: .semibold))
-                                } icon: {
-                                    Image(systemName: "arrow.up")
-                                }
-                                .foregroundColor(.white)
-                                
-                                Label {
-                                    Text("\(Int(today.temp.min.rounded()))°C")
-                                        .font(.system(size: 18, weight: .semibold))
-                                } icon: {
-                                    Image(systemName: "arrow.down")
-                                }
-                                .foregroundColor(.white)
-                            }
-                            .padding(.bottom, 20)
-                        }
+                        Spacer().frame(height: 30)
                         
-                        // MARK: - Details Section
+                        // MARK: - SHADOW CARD CONTAINER
                         VStack(spacing: 0) {
-                            Text("Details")
-                                .font(.system(size: 20, weight: .semibold))
-                                .foregroundColor(.white)
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                                .padding(.horizontal, 20)
-                                .padding(.bottom, 15)
                             
-                            VStack(spacing: 12) {
+                            Spacer().frame(height: 25)
+                            
+                            // MARK: - Temperature (LEFT) and Weather Icon (RIGHT)
+                            HStack {
+                                Text("\(Int(current.temp.rounded()))°C")
+                                    .font(.system(size: 70, weight: .bold))
+                                    .foregroundColor(Color(red: 0.15, green: 0.15, blue: 0.25))
+                                
+                                Spacer()
+                                
+                                // Weather icon - RIGHT
+                                Image(systemName: weather.sfSymbolName)
+                                    .font(.system(size: 70))
+                                    .foregroundColor(Color(red: 0.2, green: 0.25, blue: 0.35))
+                                    .symbolRenderingMode(.hierarchical)
+                            }
+                            .padding(.horizontal, 20)
+                            
+                            Spacer().frame(height: 15)
+                            
+                            // MARK: - Weather Description (LEFT ALIGNED)
+                            HStack {
+                                Text(weather.description.capitalized)
+                                    .font(.system(size: 20, weight: .semibold))
+                                    .foregroundColor(Color(red: 0.15, green: 0.15, blue: 0.25))
+                                
+                                Spacer()
+                            }
+                            .padding(.horizontal, 20)
+                            
+                            Spacer().frame(height: 20)
+                            
+                            // MARK: - High/Low Temperatures (LEFT ALIGNED)
+                            HStack(spacing: 20) {
+                                HStack(spacing: 8) {
+                                    Image(systemName: "arrow.up")
+                                        .font(.system(size: 18, weight: .bold))
+                                    Text("\(Int(today.temp.max.rounded()))°C")
+                                        .font(.system(size: 22, weight: .bold))
+                                }
+                                .foregroundColor(Color(red: 0.15, green: 0.15, blue: 0.25))
+                                
+                                HStack(spacing: 8) {
+                                    Image(systemName: "arrow.down")
+                                        .font(.system(size: 18, weight: .bold))
+                                    Text("\(Int(today.temp.min.rounded()))°C")
+                                        .font(.system(size: 22, weight: .bold))
+                                }
+                                .foregroundColor(Color(red: 0.15, green: 0.15, blue: 0.25))
+                                
+                                Spacer()
+                            }
+                            .padding(.horizontal, 20)
+                            
+                            Spacer().frame(height: 30)
+                            
+                            // MARK: - Divider
+                            Divider()
+                                .background(Color(red: 0.5, green: 0.5, blue: 0.6).opacity(0.3))
+                                .padding(.horizontal, 20)
+                            
+                            Spacer().frame(height: 25)
+                            
+                            // MARK: - Details Section
+                            VStack(alignment: .leading, spacing: 0) {
+                                Text("Details")
+                                    .font(.system(size: 20, weight: .semibold))
+                                    .foregroundColor(Color(red: 0.4, green: 0.4, blue: 0.5))
+                                    .padding(.horizontal, 20)
+                                
+                                Spacer().frame(height: 20)
+                                
                                 // Pressure
                                 DetailRow(
                                     icon: "gauge",
+                                    iconColor: Color.blue,
                                     label: "Pressure",
                                     value: "\(current.pressure) hPa"
                                 )
+                                .padding(.horizontal, 20)
                                 
-                                Divider()
-                                    .background(Color.white.opacity(0.3))
+                                Spacer().frame(height: 15)
                                 
                                 // Sunrise
                                 DetailRow(
                                     icon: "sunrise.fill",
+                                    iconColor: Color.blue,
                                     label: "Sunrise",
                                     value: DateFormatterUtils.formattedDate12Hour(from: TimeInterval(current.sunrise))
                                 )
+                                .padding(.horizontal, 20)
                                 
-                                Divider()
-                                    .background(Color.white.opacity(0.3))
+                                Spacer().frame(height: 15)
                                 
                                 // Sunset
                                 DetailRow(
                                     icon: "sunset.fill",
+                                    iconColor: Color.blue,
                                     label: "Sunset",
                                     value: DateFormatterUtils.formattedDate12Hour(from: TimeInterval(current.sunset))
                                 )
+                                .padding(.horizontal, 20)
                             }
-                            .padding(20)
-                            .background(Color.white.opacity(0.15))
-                            .cornerRadius(15)
-                            .padding(.horizontal, 20)
-                        }
-                        .padding(.top, 10)
-                        
-                        // MARK: - Weather Advisory
-                        if let today = vm.dailyForecast.first,
-                           let todayWeather = today.weather.first {
+                            
+                            Spacer().frame(height: 30)
+                            
+                            // MARK: - Divider
+                            Divider()
+                                .background(Color(red: 0.5, green: 0.5, blue: 0.6).opacity(0.3))
+                                .padding(.horizontal, 20)
+                            
+                            Spacer().frame(height: 25)
+                            
+                            // MARK: - Weather Advisory Box
                             let category = WeatherAdviceCategory.from(
                                 temp: current.temp,
-                                description: todayWeather.description
+                                description: weather.description
                             )
                             
-                            HStack(spacing: 15) {
-                                Image(systemName: category.icon)
-                                    .font(.system(size: 40))
-                                    .foregroundColor(category.color)
-                                    .symbolRenderingMode(.multicolor)
+                            HStack(spacing: 12) {
+                                ZStack {
+                                    Circle()
+                                        .fill(category.color.opacity(0.3))
+                                        .frame(width: 60, height: 60)
+                                    
+                                    Image(systemName: category.icon)
+                                        .font(.system(size: 30))
+                                        .foregroundColor(category.color)
+                                        .symbolRenderingMode(.hierarchical)
+                                }
                                 
+                                // Advisory text
                                 Text(category.adviceText)
                                     .font(.system(size: 16, weight: .medium))
-                                    .foregroundColor(.white)
+                                    .foregroundColor(Color(red: 0.15, green: 0.15, blue: 0.25))
                                     .multilineTextAlignment(.leading)
+                                    .lineLimit(nil)
                             }
-                            .padding(20)
+                            .padding(15)
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .background(
-                                RoundedRectangle(cornerRadius: 15)
-                                    .fill(category.color.opacity(0.2))
-                                    .overlay(
-                                        RoundedRectangle(cornerRadius: 15)
-                                            .stroke(category.color.opacity(0.5), lineWidth: 1)
-                                    )
+                                RoundedRectangle(cornerRadius: 12)
+                                    .fill(Color.white.opacity(0.4))
                             )
                             .padding(.horizontal, 20)
-                            .padding(.top, 20)
+                            
+                            Spacer().frame(height: 25)
+                            
                         }
+                        .background(
+                            RoundedRectangle(cornerRadius: 20)
+                                .fill(Color.white.opacity(0.25))
+                        )
+                        .shadow(color: Color.black.opacity(0.1), radius: 15, x: 0, y: 8)
+                        .padding(.horizontal, 15)
+                        
+                        Spacer().frame(height: 30)
                         
                     } else {
                         // Loading state
                         VStack(spacing: 20) {
                             ProgressView()
                                 .scaleEffect(1.5)
-                                .tint(.white)
+                                .tint(Color(red: 0.15, green: 0.15, blue: 0.25))
                             Text("Loading weather data...")
-                                .foregroundColor(.white.opacity(0.8))
+                                .foregroundColor(Color(red: 0.4, green: 0.4, blue: 0.5))
                         }
                         .frame(height: 400)
                     }
-                    
-                    Spacer().frame(height: 30)
                 }
-                .padding(.vertical)
             }
         }
     }
@@ -186,31 +231,38 @@ struct CurrentWeatherView: View {
 // MARK: - Detail Row Component
 struct DetailRow: View {
     let icon: String
+    let iconColor: Color
     let label: String
     let value: String
     
     var body: some View {
-        HStack {
-            Label {
-                Text(label)
-                    .font(.system(size: 16, weight: .medium))
-                    .foregroundColor(.white.opacity(0.9))
-            } icon: {
-                Image(systemName: icon)
-                    .foregroundColor(.white.opacity(0.8))
-            }
+        HStack(spacing: 10) {
+            // Icon
+            Image(systemName: icon)
+                .font(.system(size: 18))
+                .foregroundColor(iconColor)
+                .frame(width: 30)
+            
+            // Label
+            Text(label)
+                .font(.system(size: 18, weight: .medium))
+                .foregroundColor(Color(red: 0.15, green: 0.15, blue: 0.25))
             
             Spacer()
             
+            // Value
             Text(value)
-                .font(.system(size: 16, weight: .semibold))
-                .foregroundColor(.white)
+                .font(.system(size: 18, weight: .semibold))
+                .foregroundColor(Color(red: 0.15, green: 0.15, blue: 0.25))
         }
     }
 }
 
 #Preview {
-    let vm = MainAppViewModel(context: ModelContext(ModelContainer.preview))
-    CurrentWeatherView()
+    let config = ModelConfiguration(isStoredInMemoryOnly: true)
+    let container = try! ModelContainer(for: Place.self, AnnotationModel.self, configurations: config)
+    let vm = MainAppViewModel(context: ModelContext(container))
+    
+    return CurrentWeatherView()
         .environmentObject(vm)
 }
