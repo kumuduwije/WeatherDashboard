@@ -141,7 +141,7 @@ struct CurrentWeatherView: View {
                                     icon: "sunrise.fill",
                                     iconColor: Color.blue,
                                     label: "Sunrise",
-                                    value: DateFormatterUtils.formattedDate12Hour(from: TimeInterval(current.sunrise))
+                                    value: DateFormatterUtils.formattedDate24Hour(from: TimeInterval(current.sunrise))
                                 )
                                 .padding(.horizontal, 20)
                                 
@@ -152,7 +152,7 @@ struct CurrentWeatherView: View {
                                     icon: "sunset.fill",
                                     iconColor: Color.blue,
                                     label: "Sunset",
-                                    value: DateFormatterUtils.formattedDate12Hour(from: TimeInterval(current.sunset))
+                                    value: DateFormatterUtils.formattedDate24Hour(from: TimeInterval(current.sunset))
                                 )
                                 .padding(.horizontal, 20)
                             }

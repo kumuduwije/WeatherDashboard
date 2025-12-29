@@ -59,6 +59,13 @@ class DateFormatterUtils {
             dateFormatter.dateFormat = "hh:mm a"
             return dateFormatter.string(from: date)
     }
+    
+    static func formattedDate24Hour(from timestamp: TimeInterval) -> String {
+        let date = Date(timeIntervalSince1970: timestamp)
+        let formatter = DateFormatter()
+        formatter.dateFormat = "HH:mm"
+        return formatter.string(from: date)
+    }
 
     static func formattedDateWithDay(from timestamp: TimeInterval) -> String {
             let dateFormatter = DateFormatter()
