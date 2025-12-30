@@ -157,7 +157,7 @@ struct PlaceRowCard: View {
     let isActive: Bool
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
+        VStack(alignment: .leading, spacing: 5) {
             // Place name - dark color
             Text(place.name)
                 .font(.system(size: 22, weight: .semibold))
@@ -165,20 +165,20 @@ struct PlaceRowCard: View {
             
             // Coordinates - gray color
             Text("Lat: \(String(format: "%.3f", place.latitude)), Lon: \(String(format: "%.3f", place.longitude))")
-                .font(.system(size: 13, weight: .regular))
+                .font(.system(size: 14, weight: .regular))
                 .foregroundColor(Color(red: 0.45, green: 0.55, blue: 0.6))
             
             // Timestamp - lighter gray
             Text(formatTimestamp(place.lastUsedAt))
-                .font(.system(size: 12, weight: .regular))
-                .foregroundColor(Color(red: 0.5, green: 0.6, blue: 0.65))
+                .font(.system(size: 13, weight: .regular))
+                .foregroundColor(Color(red: 0.45, green: 0.55, blue: 0.6))
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.vertical, 14)
         .padding(.horizontal, 20)
         .background(
             isActive
-                ? Color(red: 0.45, green: 0.7092, blue: 0.9236)
+                ? Color(red: 0.57, green: 0.67, blue: 0.84)
                 : Color.clear
         )
         .padding(.horizontal, 16)
