@@ -16,9 +16,9 @@ struct CurrentWeatherView: View {
             // Gradient background - light blue to pink/purple
             LinearGradient(
                 gradient: Gradient(colors: [
-                    Color(red: 0.75, green: 0.82, blue: 0.95),  // Light blue top
-                    Color(red: 0.92, green: 0.85, blue: 0.92),  // Light pink middle
-                    Color(red: 0.95, green: 0.90, blue: 0.92)   // Very light pink bottom
+                    Color(red: 0.6936, green: 0.6891, blue: 0.7833), // top (soft blue/indigo)
+                    Color(red: 0.9491, green: 0.8063, blue: 0.8362), // middle (soft pink)
+                    Color(red: 0.8553, green: 0.7366, blue: 0.9399)  // bottom (lavender/purple)
                 ]),
                 startPoint: .top,
                 endPoint: .bottom
