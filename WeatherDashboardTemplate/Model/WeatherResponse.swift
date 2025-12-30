@@ -28,7 +28,8 @@ struct Current: Codable {
     let temp, feelsLike: Double
     let pressure, humidity: Int
     let dewPoint: Double
-    let uvi, clouds, visibility: Int
+    let uvi: Double
+    let clouds, visibility: Int
     let windSpeed: Double
     let windDeg: Int
     let weather: [Weather]
