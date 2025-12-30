@@ -16,12 +16,13 @@ struct VisitedPlacesView: View {
         ZStack {
             // Background gradient
             LinearGradient(
-                gradient: Gradient(colors: [
-                    Color(red: 0.5, green: 0.85, blue: 0.85), // Cyan/teal at top
-                    Color(red: 0.7, green: 0.75, blue: 0.95)  // Light purple at bottom
+                gradient: Gradient(stops: [
+                    .init(color: Color(red: 0.3829, green: 0.8343, blue: 0.8365), location: 0.00), // teal (top-left)
+                    .init(color: Color(red: 0.5709, green: 0.7104, blue: 0.8430), location: 0.30), // soft blue (middle)
+                    .init(color: Color(red: 0.8504, green: 0.7953, blue: 0.9478), location: 1.00)  // lavender (bottom-right)
                 ]),
-                startPoint: .top,
-                endPoint: .bottom
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
             )
             .ignoresSafeArea()
             
@@ -175,10 +176,9 @@ struct PlaceRowCard: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.vertical, 14)
         .padding(.horizontal, 20)
-        // Apply background before outer padding this gets the proper spacing between card content
         .background(
             isActive
-                ? Color(red: 0.70, green: 0.73, blue: 0.88)  // Exact color from Image 2
+                ? Color(red: 0.45, green: 0.7092, blue: 0.9236)
                 : Color.clear
         )
         .padding(.horizontal, 16)
