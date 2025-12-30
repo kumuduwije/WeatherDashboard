@@ -82,12 +82,13 @@ struct ForecastView: View {
         ZStack {
             // Background gradient
             LinearGradient(
-                gradient: Gradient(colors: [
-                    Color(red: 0.88, green: 0.85, blue: 0.95),  // Light purple top
-                    Color(red: 0.95, green: 0.90, blue: 0.92)   // Light pink bottom
+                gradient: Gradient(stops: [
+                    .init(color: Color(red: 0.80, green: 0.83, blue: 0.98), location: 0.00), // light sky blue
+                    .init(color: Color(red: 0.86, green: 0.84, blue: 0.95), location: 0.55), // soft lavender
+                    .init(color: Color(red: 0.97, green: 0.74, blue: 0.82), location: 1.00)  // soft pink
                 ]),
-                startPoint: .top,
-                endPoint: .bottom
+                startPoint: .topTrailing,
+                endPoint: .bottomLeading
             )
             .ignoresSafeArea()
             
