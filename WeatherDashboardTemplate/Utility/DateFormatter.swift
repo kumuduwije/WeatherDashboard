@@ -78,7 +78,7 @@ class DateFormatterUtils {
 
     static func formattedDateWithWeekdayAndDay(from timestamp: TimeInterval) -> String {
             let dateFormatter = DateFormatter()
-            dateFormatter.dateFormat = "EEEE dd"
+            dateFormatter.dateFormat = "EEEE, MMM dd"
             return dateFormatter.string(from: Date(timeIntervalSince1970: timestamp))
     }
 
