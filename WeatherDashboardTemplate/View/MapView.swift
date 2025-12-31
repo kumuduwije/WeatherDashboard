@@ -12,6 +12,7 @@ import SwiftData
 struct MapView: View {
     @EnvironmentObject var vm: MainAppViewModel
     @State private var mapPosition: MapCameraPosition = .automatic
+    @State private var selectedPOIID: UUID?
     
     var body: some View {
         VStack(spacing: 0) {
@@ -28,16 +29,16 @@ struct MapView: View {
                 }
             }
             .mapStyle(.standard(elevation: .realistic))
-            .frame(height: 350)
+            
+            .frame(maxHeight: .infinity)
             .onAppear {
                 updateMapPosition()
             }
             .onChange(of: vm.mapRegion.center.latitude) { _, _ in updateMapPosition() }
             .onChange(of: vm.mapRegion.center.longitude) { _, _ in updateMapPosition() }
             
-            // MARK: - POI List 
+            // MARK: - POI List
             ZStack(alignment: .top) {
-
                 Image("blue-sky")
                     .resizable()
                     .aspectRatio(contentMode: .fill)
@@ -46,8 +47,8 @@ struct MapView: View {
                 
                 VStack(alignment: .leading, spacing: 0) {
                     // Header
-                    HStack(spacing: 8) {
-                        Image(systemName: "mappin.and.ellipse")
+                    HStack(spacing: 6) {
+//                        Image(systemName: "mappin.and.ellipse")
                         Text("Top 5 Tourist Attractions in \(vm.activePlaceName)")
                             .font(.system(size: 15, weight: .semibold))
                     }
@@ -60,8 +61,9 @@ struct MapView: View {
                     ScrollView {
                         LazyVStack(spacing: 0) {
                             ForEach(Array(vm.pois.enumerated()), id: \.element.id) { index, poi in
-                                POIListItem(poi: poi)
+                                POIListItem(poi: poi, isSelected: selectedPOIID == poi.id)
                                     .onTapGesture {
+                                        selectedPOIID = poi.id
                                         handleListItemTap(poi: poi)
                                     }
                             }
@@ -69,9 +71,11 @@ struct MapView: View {
                     }
                 }
             }
+
             .ignoresSafeArea(edges: .bottom)
         }
-        .ignoresSafeArea(edges: .top)
+
+        .background(Color.white)
     }
     
     private func updateMapPosition() {
@@ -81,6 +85,7 @@ struct MapView: View {
     }
     
     private func handlePinTap(poi: AnnotationModel) {
+        selectedPOIID = poi.id
         vm.focus(on: poi.coordinate, zoom: 0.005)
         updateMapPosition()
     }
@@ -103,10 +108,11 @@ struct MapView: View {
 // MARK: - List Item
 struct POIListItem: View {
     let poi: AnnotationModel
+    let isSelected: Bool
     
     var body: some View {
         HStack(spacing: 15) {
-            // Pin Icon Badge (Matches Image 2)
+            // Pin Icon Badge
             ZStack {
                 Circle()
                     .fill(Color.orange)
@@ -126,6 +132,7 @@ struct POIListItem: View {
         }
         .padding(.horizontal, 20)
         .padding(.vertical, 12)
+        .background(isSelected ? Color.white.opacity(0.2) : Color.clear)
         .background(
             Divider()
                 .background(Color.white.opacity(0.3))
@@ -165,7 +172,7 @@ struct POIMarkerWithGesture: View {
         )
     }
 }
-// MARK: - Preview
+
 #Preview {
     let config = ModelConfiguration(isStoredInMemoryOnly: true)
     let container = try! ModelContainer(for: Place.self, AnnotationModel.self, configurations: config)
