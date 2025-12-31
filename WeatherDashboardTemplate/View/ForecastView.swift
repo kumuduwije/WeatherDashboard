@@ -94,6 +94,7 @@ struct ForecastView: View {
             
             ScrollView {
                 VStack(spacing: 0) {
+                    Spacer().frame(height: 60)
                     VStack(alignment: .leading, spacing: 5) {
                         Text("8 Day Forecast - \(vm.activePlaceName)")
                             .font(.system(size: 28, weight: .regular))

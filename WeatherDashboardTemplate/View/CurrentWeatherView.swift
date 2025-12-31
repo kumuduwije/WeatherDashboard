@@ -27,6 +27,7 @@ struct CurrentWeatherView: View {
             
             ScrollView {
                 VStack(spacing: 0) {
+                    Spacer().frame(height: 70)
                     if let current = vm.currentWeather,
                        let weather = current.weather.first,
                        let today = vm.dailyForecast.first {
