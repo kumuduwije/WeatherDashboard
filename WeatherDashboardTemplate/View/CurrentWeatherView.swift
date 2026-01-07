@@ -11,6 +11,8 @@ import SwiftData
 struct CurrentWeatherView: View {
     @EnvironmentObject var vm: MainAppViewModel
     @State private var isCelsius: Bool = true
+    @State private var iconScale: CGFloat = 0.5
+    @State private var advisoryIconScale: CGFloat = 0.5
 
     // Convert temperature based on selected unit
     private func convertTemp(_ celsius: Double) -> String {
@@ -119,6 +121,18 @@ struct CurrentWeatherView: View {
                                     .font(.system(size: 70))
                                     .foregroundColor(Color(red: 0.2, green: 0.25, blue: 0.35))
                                     .symbolRenderingMode(.hierarchical)
+                                    .scaleEffect(iconScale)
+                                    .onAppear {
+                                        withAnimation(.spring(response: 0.6, dampingFraction: 0.5, blendDuration: 0)) {
+                                            iconScale = 1.0
+                                        }
+                                    }
+                                    .onChange(of: vm.activePlaceName) { _, _ in
+                                        iconScale = 0.5
+                                        withAnimation(.spring(response: 0.6, dampingFraction: 0.5, blendDuration: 0)) {
+                                            iconScale = 1.0
+                                        }
+                                    }
                             }
                             .padding(.horizontal, 20)
                             
@@ -228,11 +242,23 @@ struct CurrentWeatherView: View {
                                     Circle()
                                         .fill(category.color.opacity(0.3))
                                         .frame(width: 60, height: 60)
-                                    
+
                                     Image(systemName: category.icon)
                                         .font(.system(size: 30))
                                         .foregroundColor(category.color)
                                         .symbolRenderingMode(.hierarchical)
+                                        .scaleEffect(advisoryIconScale)
+                                        .onAppear {
+                                            withAnimation(.spring(response: 0.6, dampingFraction: 0.5, blendDuration: 0).delay(0.3)) {
+                                                advisoryIconScale = 1.0
+                                            }
+                                        }
+                                        .onChange(of: vm.activePlaceName) { _, _ in
+                                            advisoryIconScale = 0.5
+                                            withAnimation(.spring(response: 0.6, dampingFraction: 0.5, blendDuration: 0).delay(0.3)) {
+                                                advisoryIconScale = 1.0
+                                            }
+                                        }
                                 }
                                 
                                 // Advisory text
