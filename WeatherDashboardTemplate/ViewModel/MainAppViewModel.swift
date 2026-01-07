@@ -13,8 +13,8 @@ import MapKit
 final class MainAppViewModel: ObservableObject {
     // MARK: - Published Properties
     @Published var query = ""
-    @Published var currentWeather: Current?  // Changed to store full Current object
-    @Published var dailyForecast: [Daily] = []  // Changed to store full Daily objects
+    @Published var currentWeather: Current?
+    @Published var dailyForecast: [Daily] = [] 
     @Published var pois: [AnnotationModel] = []
     @Published var mapRegion = MKCoordinateRegion()
     @Published var visited: [Place] = []

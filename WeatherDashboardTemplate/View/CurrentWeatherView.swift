@@ -10,7 +10,18 @@ import SwiftData
 
 struct CurrentWeatherView: View {
     @EnvironmentObject var vm: MainAppViewModel
-    
+    @State private var isCelsius: Bool = true
+
+    // Convert temperature based on selected unit
+    private func convertTemp(_ celsius: Double) -> String {
+        if isCelsius {
+            return "\(Int(celsius.rounded()))°C"
+        } else {
+            let fahrenheit = (celsius * 9/5) + 32
+            return "\(Int(fahrenheit.rounded()))°F"
+        }
+    }
+
     var body: some View {
         ZStack {
             // Gradient background - light blue to pink/purple
@@ -32,19 +43,58 @@ struct CurrentWeatherView: View {
                        let weather = current.weather.first,
                        let today = vm.dailyForecast.first {
                         
-                        // MARK: - Location and Date Header (OUTSIDE SHADOW CARD)
-                        HStack() {
-                            // Location name
-                            Text(vm.activePlaceName.isEmpty ? "Loading..." : vm.activePlaceName)
-                                .font(.system(size: 30, weight: .bold))
-                                .foregroundColor(Color(red: 0.15, green: 0.15, blue: 0.25))
-                            
-                            Spacer()
-                            
-                            // Date
-                            Text(DateFormatterUtils.formattedCurrentDate(format: "EEEE, MMM dd"))
-                                .font(.system(size: 16, weight: .bold))
-                                .foregroundColor(Color(red: 0.4, green: 0.4, blue: 0.5))
+                        // MARK: - Location and Date Header
+                        VStack(alignment: .leading, spacing: 8) {
+                            HStack(alignment: .center) {
+                                // Location name
+                                Text(vm.activePlaceName.isEmpty ? "Loading..." : vm.activePlaceName)
+                                    .font(.system(size: 30, weight: .bold))
+                                    .foregroundColor(Color(red: 0.15, green: 0.15, blue: 0.25))
+
+                                Spacer()
+
+                                // Date
+                                Text(DateFormatterUtils.formattedCurrentDate(format: "EEEE, MMM dd"))
+                                    .font(.system(size: 16, weight: .bold))
+                                    .foregroundColor(Color(red: 0.4, green: 0.4, blue: 0.5))
+                            }
+
+                            // Temperature Unit Toggle
+                            HStack {
+                                Spacer()
+
+                                HStack(spacing: 4) {
+                                    Button(action: {
+                                        withAnimation(.easeInOut(duration: 0.2)) {
+                                            isCelsius = true
+                                        }
+                                    }) {
+                                        Text("°C")
+                                            .font(.system(size: 14, weight: isCelsius ? .bold : .medium))
+                                            .foregroundColor(isCelsius ? Color(red: 0.15, green: 0.15, blue: 0.25) : Color(red: 0.5, green: 0.5, blue: 0.6))
+                                    }
+
+                                    Text("|")
+                                        .font(.system(size: 14, weight: .light))
+                                        .foregroundColor(Color(red: 0.5, green: 0.5, blue: 0.6))
+
+                                    Button(action: {
+                                        withAnimation(.easeInOut(duration: 0.2)) {
+                                            isCelsius = false
+                                        }
+                                    }) {
+                                        Text("°F")
+                                            .font(.system(size: 14, weight: !isCelsius ? .bold : .medium))
+                                            .foregroundColor(!isCelsius ? Color(red: 0.15, green: 0.15, blue: 0.25) : Color(red: 0.5, green: 0.5, blue: 0.6))
+                                    }
+                                }
+                                .padding(.horizontal, 12)
+                                .padding(.vertical, 6)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 12)
+                                        .fill(Color.white.opacity(0.4))
+                                )
+                            }
                         }
                         .padding(.horizontal, 20)
                         .padding(.vertical, 3)
@@ -56,15 +106,15 @@ struct CurrentWeatherView: View {
                             
                             Spacer().frame(height: 25)
                             
-                            // MARK: - Temperature (LEFT) and Weather Icon (RIGHT)
+                            // MARK: - Temperature (LEFT) and Weather Icon
                             HStack {
-                                Text("\(Int(current.temp.rounded()))°C")
+                                Text(convertTemp(current.temp))
                                     .font(.system(size: 70, weight: .bold))
                                     .foregroundColor(Color(red: 0.15, green: 0.15, blue: 0.25))
-                                
+
                                 Spacer()
-                                
-                                // Weather icon - RIGHT
+
+                                // Weather icon
                                 Image(systemName: weather.sfSymbolName)
                                     .font(.system(size: 70))
                                     .foregroundColor(Color(red: 0.2, green: 0.25, blue: 0.35))
@@ -91,19 +141,19 @@ struct CurrentWeatherView: View {
                                 HStack(spacing: 8) {
                                     Image(systemName: "arrow.up")
                                         .font(.system(size: 18, weight: .bold))
-                                    Text("\(Int(today.temp.max.rounded()))°C")
+                                    Text(convertTemp(today.temp.max))
                                         .font(.system(size: 22, weight: .bold))
                                 }
                                 .foregroundColor(Color(red: 0.15, green: 0.15, blue: 0.25))
-                                
+
                                 HStack(spacing: 8) {
                                     Image(systemName: "arrow.down")
                                         .font(.system(size: 18, weight: .bold))
-                                    Text("\(Int(today.temp.min.rounded()))°C")
+                                    Text(convertTemp(today.temp.min))
                                         .font(.system(size: 22, weight: .bold))
                                 }
                                 .foregroundColor(Color(red: 0.15, green: 0.15, blue: 0.25))
-                                
+
                                 Spacer()
                             }
                             .padding(.horizontal, 20)
