@@ -7,15 +7,6 @@
 
 import Foundation
 
-// This file was generated from JSON Schema using quicktype, do not modify it directly.
-// To parse the JSON, add this file to your project and do:
-//
-//   let weatherResponse = try? JSONDecoder().decode(WeatherResponse.self, from: jsonData)
-
-// MARK:  You can use this file however you will not get any credit for it. You must create your own WeatherResponse that is specific for your app and that it is efficient
-
-import Foundation
-
 // MARK: - WeatherResponse
 struct WeatherResponse: Codable {
     let lat, lon: Double
@@ -37,7 +28,8 @@ struct Current: Codable {
     let temp, feelsLike: Double
     let pressure, humidity: Int
     let dewPoint: Double
-    let uvi, clouds, visibility: Int
+    let uvi: Double
+    let clouds, visibility: Int
     let windSpeed: Double
     let windDeg: Int
     let weather: [Weather]
@@ -55,13 +47,32 @@ struct Current: Codable {
 }
 
 // MARK: - Weather
-struct Weather: Codable {
+struct Weather: Codable, Identifiable {
     let id: Int
     let main, description, icon: String
+    
+    /// Helper computed property for SF Symbol weather icon
+    var sfSymbolName: String {
+        switch icon {
+        case "01d": return "sun.max.fill"
+        case "01n": return "moon.stars.fill"
+        case "02d": return "cloud.sun.fill"
+        case "02n": return "cloud.moon.fill"
+        case "03d", "03n": return "cloud.fill"
+        case "04d", "04n": return "smoke.fill"
+        case "09d", "09n": return "cloud.rain.fill"
+        case "10d": return "cloud.sun.rain.fill"
+        case "10n": return "cloud.moon.rain.fill"
+        case "11d", "11n": return "cloud.bolt.fill"
+        case "13d", "13n": return "snow"
+        case "50d", "50n": return "cloud.fog.fill"
+        default: return "cloud.fill"
+        }
+    }
 }
 
 // MARK: - Daily
-struct Daily: Codable {
+struct Daily: Codable, Identifiable {
     let dt, sunrise, sunset, moonrise: Int
     let moonset: Int
     let moonPhase: Double
@@ -76,6 +87,9 @@ struct Daily: Codable {
     let clouds: Int
     let pop, uvi: Double
     let rain: Double?
+    
+    // Add ID for Identifiable
+    var id: Int { dt }
 
     enum CodingKeys: String, CodingKey {
         case dt, sunrise, sunset, moonrise, moonset
@@ -101,4 +115,3 @@ struct Temp: Codable {
     let day, min, max, night: Double
     let eve, morn: Double
 }
-

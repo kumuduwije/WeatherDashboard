@@ -1,4 +1,3 @@
-//
 //  NavBarView.swift
 //  WeatherDashboardTemplate
 //
@@ -10,29 +9,9 @@ import SwiftData
 
 struct NavBarView: View {
     @EnvironmentObject var vm: MainAppViewModel
-
+    
     var body: some View {
-        VStack(spacing: 0) {
-            // 🔍 Search Bar
-            HStack {
-                TextField("Enter location", text: $vm.query)
-                    .textFieldStyle(.roundedBorder)
-                    .submitLabel(.search)
-                    .onSubmit { vm.submitQuery() } 
-
-                Button {
-                    vm.submitQuery()
-                } label: {
-                    Image(systemName: "magnifyingglass")
-                        .font(.title2)
-                }
-            }
-            .padding()
-            .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 12))
-            .shadow(radius: 3, y: 2)
-            .padding(.horizontal)
-
-            // 🌤 Tabs
+        ZStack(alignment: .top) {
             TabView(selection: $vm.selectedTab) {
                 CurrentWeatherView()
                     .tabItem { Label("Now", systemImage: "sun.max.fill") }
@@ -51,40 +30,71 @@ struct NavBarView: View {
                     .tag(3)
             }
             .accentColor(.blue)
-        }
-        .frame(maxWidth: .infinity,maxHeight: .infinity, alignment: .top)
-
-        .overlay {
-            if vm.isLoading {
-                ProgressView("Loading…")
-                    .padding()
-                    .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 10))
+            
+            .overlay {
+                       if vm.isLoading {
+                           ProgressView("Loading…")
+                               .padding()
+                               .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 10))
+                       }
+                   }
+                   
+                   // Error Alert (red/warning)
+                   .alert(item: $vm.appError) { error in
+                       Alert(
+                           title: Text("Error"),
+                           message: Text(error.localizedDescription),
+                           dismissButton: .default(Text("OK"))
+                       )
+                   }  
+                   .alert("Success", isPresented: $vm.showInfoAlert) {
+                       Button("OK", role: .cancel) { }
+                   } message: {
+                       if let message = vm.infoMessage {
+                           Text(message)
+                       }
+                   }
+            .ignoresSafeArea(edges: .top)
+            
+            VStack(spacing: 0) {
+                HStack(spacing: 12) {
+                    Text("Change Location")
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundColor(.black)
+                    
+                    HStack {
+                        TextField("Enter New Location", text: $vm.query)
+                            .textFieldStyle(.plain)
+                            .submitLabel(.search)
+                            .onSubmit { vm.submitQuery() }
+                        
+                        Button {
+                            vm.submitQuery()
+                        } label: {
+                            Image(systemName: "magnifyingglass")
+                                .font(.system(size: 16, weight: .semibold))
+                                .foregroundColor(.black)
+                        }
+                    }
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 6)
+                    .background(Color.white)
+                    .cornerRadius(4)
+                }
+                .padding(.horizontal, 12)
+                .padding(.vertical, 8)
+                .background(.thinMaterial) // Transparent glass effect
+                .clipShape(RoundedRectangle(cornerRadius: 15))
+                .padding(.horizontal)
+                .padding(.top, 5)
             }
         }
-        .alert(item: $vm.appError) { error in
-            Alert(
-                title: Text("Error"),
-                message: Text(error.localizedDescription),
-                dismissButton: .default(Text("OK"))
-            )
-        }
+        
+        .background(Color.clear)
     }
 }
-
-
-
 #Preview {
     let vm = MainAppViewModel(context: ModelContext(ModelContainer.preview))
     NavBarView()
         .environmentObject(vm)
 }
-
-//#Preview("Full Dashboard") {
-//    // 👇 This creates a mock ModelContext using your in-memory preview container
-//    let vm = MainAppViewModel(context: ModelContext(ModelContainer.preview))
-//
-//    // 👇 This displays *all* your tab content at once
-//    NavBarView()
-//        .environmentObject(vm)
-//}
-//
