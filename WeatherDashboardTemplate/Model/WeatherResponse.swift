@@ -88,7 +88,7 @@ struct Daily: Codable, Identifiable {
     let pop, uvi: Double
     let rain: Double?
     
-    // Add ID for Identifiable conformance
+    // Add ID for Identifiable
     var id: Int { dt }
 
     enum CodingKeys: String, CodingKey {

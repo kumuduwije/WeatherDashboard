@@ -111,7 +111,7 @@ struct VisitedPlacesView: View {
         withAnimation {
             for index in offsets {
                 let place = vm.visited[index]
-                print("🗑️ Deleting place: \(place.name)")
+                print("Deleting place: \(place.name)")
                 vm.delete(place: place)
             }
         }
@@ -138,7 +138,7 @@ struct VisitedPlacesView: View {
     
     /// Handles long press - opens Google search for location
     private func handlePlaceLongPress(place: Place) {
-        print("🔍 Long press: Opening Google search for \(place.name)")
+        print("Long press: Opening Google search for \(place.name)")
         
         guard let query = place.name.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed),
               let url = URL(string: "https://www.google.com/search?q=\(query)") else {

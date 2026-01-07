@@ -17,28 +17,28 @@ final class LocationManager {
     /// - Returns: Tuple containing (name, latitude, longitude)
     /// - Throws: WeatherMapError.geocodingFailed if location cannot be found
     func geocodeAddress(_ address: String) async throws -> (name: String, lat: Double, lon: Double) {
-        print("🔍 Geocoding address: \(address)")
+        print("Geocoding address: \(address)")
         
-        // 1. Create geocoder instance
+        // Geocoder instance
         let geocoder = CLGeocoder()
         
         do {
-            // 2. Perform async geocoding
+            // Perform async geocoding
             let placemarks = try await geocoder.geocodeAddressString(address)
             
-            // 3. Validate we got results
+            // Validate results
             guard let placemark = placemarks.first,
                   let location = placemark.location else {
-                print("❌ No location found for: \(address)")
+                print("No location found for: \(address)")
                 throw WeatherMapError.geocodingFailed(address)
             }
             
-            // 4. Extract name (prefer locality, fallback to name)
+            // Extract name (prefer locality, fallback to name)
             let name = placemark.locality ?? placemark.name ?? address
             let lat = location.coordinate.latitude
             let lon = location.coordinate.longitude
             
-            print("✅ Geocoded '\(address)' → \(name) (\(lat), \(lon))")
+            print("Geocoded '\(address)' → \(name) (\(lat), \(lon))")
             
             return (name: name, lat: lat, lon: lon)
             
@@ -47,7 +47,7 @@ final class LocationManager {
             throw error
         } catch {
             // Geocoding failed
-            print("❌ Geocoding failed: \(error.localizedDescription)")
+            print("Geocoding failed: \(error.localizedDescription)")
             throw WeatherMapError.geocodingFailed(address)
         }
     }
@@ -60,30 +60,30 @@ final class LocationManager {
     /// - Returns: Array of AnnotationModel objects representing tourist attractions
     /// - Throws: WeatherMapError if search fails
     func findPOIs(lat: Double, lon: Double, limit: Int = 5) async throws -> [AnnotationModel] {
-        print("🗺️ Searching for POIs near (\(lat), \(lon))")
+        print("Searching for POIs near (\(lat), \(lon))")
         
-        // 1. Create coordinate and region
+        // Create coordinate and region
         let coordinate = CLLocationCoordinate2D(latitude: lat, longitude: lon)
         
-        // Small region (~1km radius) around the location
+        // Small region (1km radius) around the location
         let region = MKCoordinateRegion(
             center: coordinate,
             latitudinalMeters: 1000,
             longitudinalMeters: 1000
         )
         
-        // 2. Create search request for tourist attractions
+        // Create search request for tourist attractions
         let request = MKLocalSearch.Request()
         request.naturalLanguageQuery = "Tourist Attractions"
         request.region = region
         
-        // 3. Perform search
+        // Perform search
         let search = MKLocalSearch(request: request)
         
         do {
             let response = try await search.start()
             
-            // 4. Convert MKMapItem results to AnnotationModel
+            // Convert MKMapItem results to AnnotationModel
             let annotations = response.mapItems
                 .compactMap { item -> AnnotationModel? in
                     // Filter out items without names
@@ -98,9 +98,9 @@ final class LocationManager {
                 .prefix(limit) // Limit to requested number
                 .map { $0 } // Convert Slice to Array
             
-            print("✅ Found \(annotations.count) tourist attractions")
+            print("Found \(annotations.count) tourist attractions")
             
-            // Print each POI for debugging
+            
             for (index, poi) in annotations.enumerated() {
                 print("   \(index + 1). \(poi.name)")
             }
@@ -109,7 +109,7 @@ final class LocationManager {
             
         } catch {
             // Search failed (network error, invalid region, etc.)
-            print("❌ POI search failed: \(error.localizedDescription)")
+            print("POI search failed: \(error.localizedDescription)")
             throw WeatherMapError.networkError(error)
         }
     }

@@ -39,13 +39,11 @@ final class Place {
         self.annotations = annotations
     }
     
-    /// Convenience computed property for CLLocationCoordinate2D
     var coordinate: CLLocationCoordinate2D {
         CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
     }
 }
 
-/// Represents a Point of Interest (tourist attraction) associated with a Place
 @Model
 final class AnnotationModel: Identifiable {
     var id: UUID = UUID()
@@ -63,7 +61,6 @@ final class AnnotationModel: Identifiable {
         self.place = place
     }
     
-    /// Convenience computed property for CLLocationCoordinate2D
     var coordinate: CLLocationCoordinate2D {
         CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
     }

@@ -60,8 +60,6 @@ final class MainAppViewModel: ObservableObject {
         }
     }
     
-    // MARK: - Public Methods
-    
     /// Called when user submits a search query
     func submitQuery() {
         let city = query.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -93,11 +91,11 @@ final class MainAppViewModel: ObservableObject {
         isLoading = true
         defer { isLoading = false }
         
-        print("\n🔍 === Loading location: \(byName) ===")
+        print("\n Loading location: \(byName) ===")
         
         // Check if place already exists in database
         if let existingPlace = visited.first(where: { $0.name.lowercased() == byName.lowercased() }) {
-            print("📦 Location found in database, loading from storage...")
+            print("Location found in database, loading from storage...")
             await loadLocation(fromPlace: existingPlace)
             showInfoMessage("Location '\(existingPlace.name)' loaded from storage")
             return
@@ -105,44 +103,44 @@ final class MainAppViewModel: ObservableObject {
         
         // New place - start geocoding
         do {
-            // 1. Geocode the address
+            // Geocode the address
             let (name, lat, lon) = try await locationManager.geocodeAddress(byName)
             
-            // 2. Fetch weather as fail-fast check
+            // Fetch weather
             let weatherResponse = try await weatherService.fetchWeather(lat: lat, lon: lon)
             
-            // 3. Find POIs
+            // Find POIs
             let poiList = try await locationManager.findPOIs(lat: lat, lon: lon)
             
-            // 4. Create new Place object
+            // Create new Place object
             let newPlace = Place(name: name, latitude: lat, longitude: lon)
             
-            // 5. Associate POIs with the place
+            // Associate POIs with the place
             for poi in poiList {
                 poi.place = newPlace
                 newPlace.annotations.append(poi)
             }
             
-            // 6. Insert into context and save
+            // Insert into context and save
             context.insert(newPlace)
             visited.insert(newPlace, at: 0)
             
             do {
                 try context.save()
-                print("💾 Place saved to database: \(name)")
+                print("Place saved to database: \(name)")
             } catch {
-                print("❌ Failed to save context: \(error)")
+                print("Failed to save context: \(error)")
                 throw WeatherMapError.networkError(error)
             }
             
-            // 7. Update UI with all data
+            // Update UI with data
             try await loadAll(for: newPlace)
             
-            // 8. Show success message
+            // Show success message
             showInfoMessage("Location '\(name)' saved successfully")
             
         } catch {
-            print("❌ Error loading location '\(byName)': \(error)")
+            print("Error loading location '\(byName)': \(error)")
             await revertToDefaultWithAlert(message: "Could not find location '\(byName)'. Please try another name.")
             throw error
         }
@@ -153,7 +151,7 @@ final class MainAppViewModel: ObservableObject {
         isLoading = true
         defer { isLoading = false }
         
-        print("\n📦 === Loading from database: \(place.name) ===")
+        print("\n Loading from database: \(place.name) ===")
         
         do {
             // Update lastUsedAt timestamp
@@ -164,23 +162,23 @@ final class MainAppViewModel: ObservableObject {
             try await loadAll(for: place)
             
         } catch {
-            print("❌ Error loading place: \(error)")
+            print("Error loading place: \(error)")
             appError = .networkError(error)
         }
     }
     
     /// Deletes a place from the database
     func delete(place: Place) {
-        print("🗑️ Deleting place: \(place.name)")
+        print("Deleting place: \(place.name)")
         
         context.delete(place)
         visited.removeAll { $0.id == place.id }
         
         do {
             try context.save()
-            print("✅ Place deleted successfully")
+            print("Place deleted successfully")
         } catch {
-            print("❌ Failed to delete place: \(error)")
+            print("Failed to delete place: \(error)")
             appError = .networkError(error)
         }
     }
@@ -193,7 +191,7 @@ final class MainAppViewModel: ObservableObject {
                 span: MKCoordinateSpan(latitudeDelta: zoom, longitudeDelta: zoom)
             )
         }
-        print("🗺️ Map focused on (\(coordinate.latitude), \(coordinate.longitude)) with zoom: \(zoom)")
+        print("Map focused on (\(coordinate.latitude), \(coordinate.longitude)) with zoom: \(zoom)")
     }
     
     // MARK: - Private Methods
@@ -207,7 +205,7 @@ final class MainAppViewModel: ObservableObject {
     /// Loads all data (weather + POIs) for a given place
     private func loadAll(for place: Place) async throws {
         activePlaceName = place.name
-        print("📍 Loading all data for: \(place.name)")
+        print("Loading all data for: \(place.name)")
         
         // ALWAYS fetch fresh weather data from API
         let weatherResponse = try await weatherService.fetchWeather(
@@ -221,12 +219,12 @@ final class MainAppViewModel: ObservableObject {
         // Store full daily forecast (8 days)
         dailyForecast = Array(weatherResponse.daily.prefix(8))
         
-        print("✅ Weather loaded: \(currentWeather?.weather.first?.main ?? "Unknown")")
-        print("✅ Forecast loaded: \(dailyForecast.count) days")
+        print("Weather loaded: \(currentWeather?.weather.first?.main ?? "Unknown")")
+        print("Forecast loaded: \(dailyForecast.count) days")
         
         // Handle POIs
         if place.annotations.isEmpty {
-            print("🔍 No POIs in database, fetching new ones...")
+            print("No POIs in database, fetching new ones...")
             
             let poiList = try await locationManager.findPOIs(
                 lat: place.latitude,
@@ -239,11 +237,11 @@ final class MainAppViewModel: ObservableObject {
             }
             
             try context.save()
-            print("💾 POIs saved to database")
+            print("POIs saved to database")
             
             pois = poiList
         } else {
-            print("📦 Using cached POIs from database (\(place.annotations.count) items)")
+            print("Using cached POIs from database (\(place.annotations.count) items)")
             pois = place.annotations
         }
         
@@ -256,12 +254,12 @@ final class MainAppViewModel: ObservableObject {
 //            visited.insert(place, at: 0)
 //        }
         
-        print("✅ === All data loaded successfully ===\n")
+        print("All data loaded successfully ===\n")
     }
     
     /// Reverts to default location and shows an alert
     private func revertToDefaultWithAlert(message: String) async {
-        print("⚠️ Reverting to default location: \(defaultPlaceName)")
+        print("Reverting to default location: \(defaultPlaceName)")
         appError = .missingData(message: message)
         await loadDefaultLocation()
     }
