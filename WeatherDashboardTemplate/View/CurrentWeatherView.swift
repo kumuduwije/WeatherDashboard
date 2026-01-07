@@ -24,6 +24,25 @@ struct CurrentWeatherView: View {
         }
     }
 
+    private func generateShareText(current: Current, weather: Weather, today: Daily) -> String {
+        let location = vm.activePlaceName
+        let date = DateFormatterUtils.formattedCurrentDate(format: "EEEE, MMM dd")
+        let temp = convertTemp(current.temp)
+        let high = convertTemp(today.temp.max)
+        let low = convertTemp(today.temp.min)
+        let description = weather.description.capitalized
+
+        return """
+        \(weather.main) in \(location)
+        \(date)
+
+        \(temp) - \(description)
+        High: \(high) | Low: \(low)
+
+        Shared from Weather Dashboard
+        """
+    }
+
     var body: some View {
         ZStack {
             // Gradient background - light blue to pink/purple
@@ -108,11 +127,29 @@ struct CurrentWeatherView: View {
                             
                             Spacer().frame(height: 25)
                             
-                            // MARK: - Temperature (LEFT) and Weather Icon
-                            HStack {
-                                Text(convertTemp(current.temp))
-                                    .font(.system(size: 70, weight: .bold))
-                                    .foregroundColor(Color(red: 0.15, green: 0.15, blue: 0.25))
+                            // MARK: - Temperature and Weather Icon
+                            HStack(alignment: .top, spacing: 15) {
+                                // Temperature with Share Button
+                                HStack(alignment: .top, spacing: 4) {
+                                    Text(convertTemp(current.temp))
+                                        .font(.system(size: 70, weight: .bold))
+                                        .foregroundColor(Color(red: 0.15, green: 0.15, blue: 0.25))
+                                        .lineLimit(1)
+                                        .minimumScaleFactor(0.8)
+
+                                    // Share Button
+                                    ShareLink(item: generateShareText(current: current, weather: weather, today: today)) {
+                                        Image(systemName: "square.and.arrow.up")
+                                            .font(.system(size: 14, weight: .medium))
+                                            .foregroundColor(Color(red: 0.15, green: 0.15, blue: 0.25).opacity(0.7))
+                                            .padding(6)
+                                            .background(
+                                                Circle()
+                                                    .fill(Color.white.opacity(0.25))
+                                            )
+                                    }
+                                    .padding(.top, 8)
+                                }
 
                                 Spacer()
 
